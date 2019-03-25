@@ -12,15 +12,21 @@ green = (100, 255, 100)
 gray = (230, 230, 230)
 
 
-def euclidean_distance((x1, y1), (x2, y2)):
+def euclidean_distance(p1, p2):
+    (x1, y1) = p1
+    (x2, y2) = p2
     return math.sqrt((x2-x1)**2 + (y2-y1)**2)
 
 
-def manhattan_distance((x1, y1), (x2, y2)):
+def manhattan_distance(p1, p2):
+    (x1, y1) = p1
+    (x2, y2) = p2
     return abs(x2-x1) + abs(y2-y1)
 
 
-def max_component_distance((x1, y1), (x2, y2)):
+def max_component_distance(p1, p2):
+    (x1, y1) = p1
+    (x2, y2) = p2
     return min(abs(x2-x1), abs(y2-y1))
 
 
@@ -65,13 +71,13 @@ class Map:
                     x += 1
                 y += 1
 
-        self.width = max(x for (x,y) in self.tiles.iterkeys()) + 1
-        self.height = max(y for (x,y) in self.tiles.iterkeys()) + 1
+        self.width = max(x for (x,y) in self.tiles.keys()) + 1
+        self.height = max(y for (x,y) in self.tiles.keys()) + 1
 
         self.nodes = {}
         self.start = None
         self.goal = None
-        for (x, y), tile in self.tiles.iteritems():
+        for (x, y), tile in self.tiles.items():
             if tile != '*':
                 node = Node((x+0.5) * tile_size, (y+0.5) * tile_size)
                 self.nodes[x, y] = node
@@ -80,9 +86,9 @@ class Map:
                 elif tile == 'G':
                     self.goal = node
 
-        for (x, y), node in self.nodes.iteritems():
-            for nx in xrange(x-1, x+2):
-                for ny in xrange(y-1, y+2):
+        for (x, y), node in self.nodes.items():
+            for nx in range(x-1, x+2):
+                for ny in range(y-1, y+2):
                     if nx == x and ny == y:
                         continue
                     if not include_diagonals and (nx != x and ny != y):
@@ -96,8 +102,8 @@ class Map:
                         node.edges.append(edge)
 
     def draw(self, screen):
-        for x in xrange(self.width):
-            for y in xrange(self.height):
+        for x in range(self.width):
+            for y in range(self.height):
                 try:
                     tile = self.tiles[x, y]
                 except KeyError:
@@ -114,11 +120,11 @@ class Map:
 
                 pygame.draw.rect(screen, colour, pygame.Rect(x*self.tile_size, y*self.tile_size, self.tile_size, self.tile_size))
 
-        for node in self.nodes.itervalues():
+        for node in self.nodes.values():
             for edge in node.edges:
                 pygame.draw.line(screen, gray, edge.from_node.pos, edge.to_node.pos, 1)
 
-        for node in self.nodes.itervalues():
+        for node in self.nodes.values():
             node.draw(screen, blue, 3)
 
     def is_unobstructed(self, p1, p2):
@@ -127,8 +133,10 @@ class Map:
                 return False
         return True
 
-    def get_supercover_line(self, (x1, y1), (x2, y2)):
+    def get_supercover_line(self, p1, p2):
         # Ported from http://eugen.dedu.free.fr/projects/bresenham/
+        (x1, y1) = p1
+        (x2, y2) = p2
         x1 = int(x1 / self.tile_size)
         y1 = int(y1 / self.tile_size)
         x2 = int(x2 / self.tile_size)
@@ -159,7 +167,7 @@ class Map:
         if ddx >= ddy:  # first octant (0 <= slope <= 1)
             # compulsory initialization (even for errorprev, needed when dx==dy)
             errorprev = error = dx  # start in the middle of the square
-            for i in xrange(dx):  # do not use the first point (already done)
+            for i in range(dx):  # do not use the first point (already done)
                 x += xstep
                 error += ddy
                 if error > ddx:  # increment y if AFTER the middle ( > )
@@ -177,7 +185,7 @@ class Map:
                 errorprev = error
         else:  # the same as above
             errorprev = error = dy
-            for i in xrange(dy):
+            for i in range(dy):
                 y += ystep
                 error += ddx
                 if error > ddy:

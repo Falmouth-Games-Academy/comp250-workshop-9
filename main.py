@@ -20,8 +20,7 @@ def search(the_map, screen):
 
     while len(open_nodes) > 0:
         # Pop an open node and mark it as visited
-        open_nodes.sort(key=lambda n: n.cost_so_far + map.euclidean_distance(n.pos, the_map.goal.pos))
-        current_node = open_nodes.pop(0)
+        current_node = open_nodes.pop()
         visited_nodes.add(current_node)
 
         # If we have reached the goal, return the path
@@ -30,13 +29,9 @@ def search(the_map, screen):
 
         # Loop through the neighbours, adding unvisited neighbours to the open list
         for edge in current_node.edges:
-            if edge.to_node not in visited_nodes:
-                new_cost_so_far = current_node.cost_so_far + edge.length
-                if edge.to_node not in open_nodes or new_cost_so_far < edge.to_node.cost_so_far:
-                    edge.to_node.came_from = current_node
-                    edge.to_node.cost_so_far = new_cost_so_far
-                    if edge.to_node not in open_nodes:
-                        open_nodes.append(edge.to_node)
+            if edge.to_node not in open_nodes and edge.to_node not in visited_nodes:
+                edge.to_node.came_from = current_node
+                open_nodes.append(edge.to_node)
 
         # Redraw the map
         screen.fill((255, 255, 255))
@@ -55,45 +50,8 @@ def search(the_map, screen):
         pygame.event.get()
 
 
-def a_star_search(the_map, screen):
-    open_nodes = [the_map.start]
-    the_map.start.priority = map.euclidean_distance(the_map.start.pos, the_map.goal.pos)
-    the_map.start.cost_so_far = 0
-    visited_nodes = set()
-
-    while len(open_nodes) > 0:
-        open_nodes.sort(key=lambda n: n.priority)
-        current_node = open_nodes.pop(0)
-        visited_nodes.add(current_node)
-
-        if current_node is the_map.goal:
-            return reconstruct_path(current_node)
-
-        for edge in current_node.edges:
-            if edge.to_node not in visited_nodes:
-                new_f = current_node.cost_so_far + edge.length + map.euclidean_distance(edge.to_node.pos, the_map.goal.pos)
-                if edge.to_node not in open_nodes or new_f < edge.to_node.priority:
-                    edge.to_node.came_from = current_node
-                    edge.to_node.cost_so_far = current_node.cost_so_far + edge.length
-                    edge.to_node.priority = new_f
-                    if edge.to_node not in open_nodes:
-                        open_nodes.append(edge.to_node)
-
-        screen.fill((255, 255, 255))
-        the_map.draw(screen)
-
-        for node in open_nodes:
-            node.draw(screen, (255, 0, 0), 6)
-
-        current_node.draw(screen, (0, 255, 0), 12)
-
-        pygame.display.flip()
-        time.sleep(0.1)
-        pygame.event.get()
-
-
 def main():
-    tile_size = 100
+    tile_size = 50
 
     # Initialise PyGame
     pygame.init()
@@ -115,7 +73,7 @@ def main():
 
         the_map.draw(screen)
         if path is not None:
-            for i in xrange(1, len(path)):
+            for i in range(1, len(path)):
                 pygame.draw.line(screen, (0, 0, 0), path[i - 1].pos, path[i].pos, 6)
 
         pygame.display.flip()
